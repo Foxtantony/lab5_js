@@ -54,3 +54,65 @@ async function getDataFromApi(apiKey, city) {
     return null;
   }
 }
+
+/**
+ * Save data to JSON file
+ * @param {string} filename - Path to file
+ * @param {Object} data - Data to save
+ */
+async function saveToFile(filename, data) {
+  try {
+    await fs.writeFile(filename, JSON.stringify(data, null, 2), 'utf8');
+    console.log(`Data successfully saved to ${filename}`);
+  } catch (error) {
+    console.error(`Error saving file: ${error.message}`);
+  }
+}
+
+/**
+ * Display weather information in console
+ * @param {Object} weatherData - Weather data
+ */
+function displayWeatherInfo(weatherData) {
+  console.log('\n===== Weather Information =====');
+  console.log(`City: ${weatherData.name}, ${weatherData.sys.country}`);
+  console.log(`Temperature: ${weatherData.main.temp}°C`);
+  console.log(`Feels like: ${weatherData.main.feels_like}°C`);
+  console.log(`Humidity: ${weatherData.main.humidity}%`);
+  console.log(`Pressure: ${weatherData.main.pressure} hPa`);
+  console.log(`Weather conditions: ${weatherData.weather[0].description}`);
+  console.log(`Wind speed: ${weatherData.wind.speed} m/s`);
+  console.log('================================');
+}
+
+/**
+ * Main program function
+ */
+async function main() {
+  try {
+    // Loading configuration
+    const config = await loadConfig('config.json');
+    console.log('Configuration successfully loaded');
+
+    // Ask user for city name
+    const city = readlineSync.question('Enter city name to get weather forecast: ');
+    
+    // Get data from API
+    console.log(`Fetching weather data for ${city}...`);
+    const weatherData = await getDataFromApi(config.api_key, city);
+    
+    if (weatherData) {
+      // Display information in console
+      displayWeatherInfo(weatherData);
+      
+      // Save data to file
+      await saveToFile('output.json', weatherData);
+    }
+  } catch (error) {
+    console.error(`An error occurred in the program: ${error.message}`);
+  }
+}
+
+// Program start
+console.log('Weather API Program Started!');
+main();
